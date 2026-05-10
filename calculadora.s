@@ -373,7 +373,8 @@ arranjo:
 	push %rbx 
 	push %r8
 
-	call subtracao 
+	movq a, %rax
+	subq a, %rax
 	movq %rax, f
 	call fatorial
 	movq %rax, %rbx
@@ -436,9 +437,9 @@ quadrada:
 	push %rbp
 	movq %rsp, %rbp
 	
-	#fsqrt %st(1), %st(0) 
-
-	#euler elevado a (1/n * lnx)
+	fsqrt 
+	fstl resultado
+	movsd resultado, %xmm0
 
 	jmp desempilha
 
