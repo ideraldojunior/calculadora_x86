@@ -10,18 +10,16 @@
 	continuar:      .asciz	"\nContinuar? (s) (n):"
 
 	saida_int:		.asciz	"Resultado: %lld \n"
-	saida_float:	.asciz	"Resultado: %lf \n"
-
+	saida_float:	.asciz	"Resultado: %lf \n
 	fmt1:		    .asciz	"%lld"
 	fmt2:		    .asciz	" %c"
 	fmt3:		    .asciz  "%lf"
 
 	um_float:       .double 1.0
-	zero_float:     .double 0.0 
-
+	zero_float:     .double 0.0
 
 .bss
-	.lcomm	operacao, 1 
+	.lcomm	operacao, 1
 	.lcomm	a, 8
 	.lcomm	b, 8
 	.lcomm	f, 8
@@ -53,7 +51,7 @@ main:
 
 	jmp acha_operacao
 
-fim_programa: 
+fim_programa:
 	pop %rbp
 	ret
 
@@ -62,7 +60,7 @@ acha_operacao:
 	cmpb $'!', operacao
 	jne tenta_inverso
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	ja operacao_invalida
 
@@ -77,7 +75,7 @@ tenta_inverso:
 	cmpb $'i', operacao
 	jne tenta_quadrada
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	je erro_inverso
 
@@ -88,7 +86,7 @@ tenta_quadrada:
 	cmpb $'r', operacao
 	jne tenta_proximo_primo
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	jae erro_raiz
 
@@ -134,7 +132,7 @@ tenta_divisao:
 	cmpb $'/', operacao
 	jne tenta_exponenciacao
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	je erro_divisao_zero
 
@@ -158,7 +156,7 @@ tenta_combinacao:
 	jne tenta_arranjos
 
 	fcomi %st(1), %st(0)
-	ja operacao_invalida 
+	ja operacao_invalida
 
 	movsd a, %xmm0
 	cvttsd2si %xmm0, %r8
@@ -178,7 +176,7 @@ tenta_arranjos:
 	fcomi %st(1), %st(0)
 	ja operacao_invalida
 
-	movsd a, %xmm0    #converte a para inteiro 
+	movsd a, %xmm0    #converte a para inteiro
 	cvttsd2si %xmm0, %r8
 	movq %r8, a
 
@@ -192,16 +190,16 @@ tenta_arranjos:
 tenta_log:
 	cmpb $'l', operacao
 	jne operacao_invalida
-	
-	fldz 
+
+	fldz
 	fcomip %st(2), %st(0)
 	jae operacao_invalida
 
-	fld1 
+	fld1
 	fcomip %st(1), %st(0)
-	je operacao_invalida 
+	je operacao_invalida
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	ja operacao_invalida
 
@@ -212,17 +210,17 @@ tenta_log:
 
 #ERROS
 erro_divisao_zero:
-	movq $err_div, %rdi 
+	movq $err_div, %rdi
 	call printf
 	jmp sair_programa
 
 erro_raiz:
-	movq $err_raiz, %rdi 
+	movq $err_raiz, %rdi
 	call printf
 	jmp sair_programa
 
 erro_inverso:
-	movq $err_inv, %rdi 
+	movq $err_inv, %rdi
 	call printf
 	jmp sair_programa
 
@@ -266,8 +264,8 @@ sair_programa:
 soma:
 	push %rbp
 	movq %rsp, %rbp
-	
-	fadd %st(1), %st(0) 
+
+	fadd %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
 
@@ -279,8 +277,8 @@ soma:
 subtracao:
 	push %rbp
 	movq %rsp, %rbp
-	
-	fsub %st(1), %st(0) 
+
+	fsub %st(0), %st(1)
 	fstl resultado
 	movsd resultado, %xmm0
 
@@ -292,7 +290,7 @@ subtracao:
 divisao:
 	push %rbp
 	movq %rsp, %rbp
-	
+
 	fdivp %st(0), %st(1)
 	fstl resultado
 	movsd resultado, %xmm0
@@ -314,16 +312,16 @@ multiplicacao:
 
 
 
-#EXPONENCIAÇÃO 
+#EXPONENCIAÇÃO
 exponenciacao:
 	push %rbp
 	movq %rsp, %rbp
 	push %rcx
 
-	movq b, %rcx  
+	movq b, %rcx
 	fstp %st(0)
 	fld1
-	jmp loop_exp 
+	jmp loop_exp
 
 loop_exp:
 	cmpq $0, %rcx
@@ -332,7 +330,7 @@ loop_exp:
 	fmul %st(1), %st(0)
 	decq %rcx
 	jmp loop_exp
-	
+
 fim_loop_exp:
 	fstl resultado
 	movsd resultado, %xmm0
@@ -347,7 +345,7 @@ combinacao:
 	push %rbp
 	movq %rsp, %rbp
 	push %rbx
-	push %rcx 
+	push %rcx
 	push %r8
 
 	movq b, %r8
@@ -370,10 +368,10 @@ combinacao:
 arranjo:
 	push %rbp
 	movq %rsp, %rbp
-	push %rbx 
+	push %rbx
 	push %r8
 
-	call subtracao 
+	call subtracao
 	movq %rax, f
 	call fatorial
 	movq %rax, %rbx
@@ -397,7 +395,7 @@ fatorial:
 	movq %rsp, %rbp
 	push %rcx
 
-	movq $1, %rax  
+	movq $1, %rax
 	movq f, %rcx
 
 	jmp loop_fat
@@ -426,7 +424,7 @@ inverso:
 	fdivp %st(0), %st(1)
 	fstl resultado
 	movsd resultado, %xmm0
-	
+
 	jmp desempilha
 
 
@@ -435,8 +433,8 @@ inverso:
 quadrada:
 	push %rbp
 	movq %rsp, %rbp
-	
-	#fsqrt %st(1), %st(0) 
+
+	#fsqrt %st(1), %st(0)
 
 	#euler elevado a (1/n * lnx)
 
@@ -448,16 +446,16 @@ quadrada:
 log:
 	push %rbp
 	movq %rsp, %rbp
-	
-	fyl2x #b 
+
+	fyl2x #b
 
 	fld a
-	fyl2x #a  
-	
+	fyl2x #a
+
 	fdiv %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
-	
+
 	jmp desempilha
 
 
@@ -467,13 +465,10 @@ log:
 proximoprimo:
 	push %rbp
 	movq %rsp, %rbp
-	
+
 	jmp desempilha
 
-
-
-
-desempilha: 
+desempilha:
 	movq %rbp, %rsp
 	pop %rbp
 	ret
