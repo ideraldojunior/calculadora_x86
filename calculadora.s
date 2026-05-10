@@ -19,8 +19,6 @@
 	um_float:       .double 1.0
 	zero_float:     .double 0.0 
 
-	x = 4 
-
 .bss
 	.lcomm	operacao, 1 
 	.lcomm	a, 8
@@ -470,9 +468,6 @@ proximoprimo:
 	movq %rsp, %rbp
 	
 	jmp desempilha
-
-
-
 
 desempilha: 
 	movq %rbp, %rsp
