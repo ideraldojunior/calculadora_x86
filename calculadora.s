@@ -280,7 +280,7 @@ subtracao:
 	push %rbp
 	movq %rsp, %rbp
 	
-	fsubp %st(0), %st(1) 
+	fsubr %st(1), %st(0) 
 	fstl resultado
 	movsd resultado, %xmm0
 
