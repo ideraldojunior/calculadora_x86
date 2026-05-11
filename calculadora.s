@@ -449,13 +449,13 @@ log:
 	movq %rsp, %rbp
 	
 	fld1
-	fxch %st(1) 
-	fyl2x #b 
+	fxch  
+	fyl2x 
 
-	fxch %st(1)
+	fxch 
 
 	fld1
-	fxch %st(1)
+	fxch 
 	fyl2x   
 	
 	fxch
