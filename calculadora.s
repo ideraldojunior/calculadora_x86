@@ -300,7 +300,6 @@ divisao:
 	jmp desempilha
 
 
-
 #MULTIPLICAÇÃO
 multiplicacao:
 	push %rbp
