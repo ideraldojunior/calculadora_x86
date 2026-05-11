@@ -1,4 +1,6 @@
 all: 
+	git add .
+	git commit -m "o"
 	gcc calculadora.s -o calculadora -no-pie -g
 
 test: 

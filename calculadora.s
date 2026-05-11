@@ -293,7 +293,7 @@ divisao:
 	push %rbp
 	movq %rsp, %rbp
 	
-	fdivr %st(0), %st(1)
+	fdiv %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
 
@@ -463,7 +463,8 @@ log:
 	fdiv %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
-
+	
+	
 	jmp desempilha
 
 
