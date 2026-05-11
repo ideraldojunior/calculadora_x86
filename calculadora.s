@@ -320,7 +320,7 @@ exponenciacao:
 	push %rcx
 
 	movq b, %rcx  
-	fstp %st(0)
+	fstp %st(0) #praticamente um pop
 	fld1
 	jmp loop_exp 
 
