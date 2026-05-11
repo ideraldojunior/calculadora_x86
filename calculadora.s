@@ -293,7 +293,7 @@ divisao:
 	push %rbp
 	movq %rsp, %rbp
 	
-	fdivp %st(0), %st(1)
+	fdivr %st(0), %st(1)
 	fstl resultado
 	movsd resultado, %xmm0
 
