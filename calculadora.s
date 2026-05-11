@@ -19,7 +19,6 @@
 	um_float:       .double 1.0
 	zero_float:     .double 0.0 
 
-
 .bss
 	.lcomm	operacao, 1 
 	.lcomm	a, 8
@@ -27,7 +26,6 @@
 	.lcomm	f, 8
 	.lcomm  resultado, 8
 	.lcomm	cont, 1
-
 
 .text
 
@@ -208,8 +206,6 @@ tenta_log:
 	call log
 	jmp imprime_resultado_float
 
-
-
 #ERROS
 erro_divisao_zero:
 	movq $err_div, %rdi 
@@ -258,8 +254,6 @@ sair_programa:
 	cmpb $'n', cont
 	jne sair_programa
 
-
-
 #OPERAÇÕES
 
 #ADIÇÃO
@@ -273,8 +267,6 @@ soma:
 
 	jmp desempilha
 
-
-
 #SUBTRAÇÃO
 subtracao:
 	push %rbp
@@ -285,8 +277,6 @@ subtracao:
 	movsd resultado, %xmm0
 
 	jmp desempilha
-
-
 
 #DIVISÃO
 divisao:
@@ -299,7 +289,6 @@ divisao:
 
 	jmp desempilha
 
-
 #MULTIPLICAÇÃO
 multiplicacao:
 	push %rbp
@@ -310,8 +299,6 @@ multiplicacao:
 	movsd resultado, %xmm0
 
 	jmp desempilha
-
-
 
 #EXPONENCIAÇÃO 
 exponenciacao:
@@ -339,8 +326,6 @@ fim_loop_exp:
 	pop %rcx
 	jmp desempilha
 
-
-
 #COMBINAÇÃO
 combinacao:
 	push %rbp
@@ -362,8 +347,6 @@ combinacao:
 	pop %rcx
 	pop %rbx
 	jmp desempilha
-
-
 
 #ARRANJO
 arranjo:
@@ -389,8 +372,6 @@ arranjo:
 	pop %rbx
 	jmp desempilha
 
-
-
 #FATORIAL
 fatorial:
 	push %rbp
@@ -415,8 +396,6 @@ fim_loop_fat:
 	pop %rcx
 	jmp desempilha
 
-
-
 #INVERSO
 inverso:
 	push %rbp
@@ -428,8 +407,6 @@ inverso:
 
 	jmp desempilha
 
-
-
 #QUADRADA
 quadrada:
 	push %rbp
@@ -440,8 +417,6 @@ quadrada:
 	movsd resultado, %xmm0
 
 	jmp desempilha
-
-
 
 #LOGARITMO
 log:
@@ -462,16 +437,12 @@ log:
 	call divisao
 	jmp desempilha
 
-
-
-
 #PRIXMOPRIMO
 proximoprimo:
 	push %rbp
 	movq %rsp, %rbp
 	
 	jmp desempilha
-
 
 
 
