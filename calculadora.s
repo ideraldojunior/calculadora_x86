@@ -450,8 +450,11 @@ log:
 	push %rbp
 	movq %rsp, %rbp
 	
+	fld1
+	fxch #inverte st(1) e st(0)
 	fyl2x #b 
 
+	fld1
 	fld a
 	fyl2x #a  
 	
