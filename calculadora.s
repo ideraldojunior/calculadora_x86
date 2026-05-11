@@ -328,7 +328,7 @@ loop_exp:
 	cmpq $0, %rcx
 	jle fim_loop_exp
 
-	fmul %st(1), %st(0)
+	call multiplicacao
 	decq %rcx
 	jmp loop_exp
 	
@@ -448,7 +448,7 @@ log:
 	push %rbp
 	movq %rsp, %rbp
 	
-	fld1
+	fld1 
 	fxch  
 	fyl2x 
 
