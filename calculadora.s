@@ -449,8 +449,8 @@ log:
 	movq %rsp, %rbp
 	
 	fld1 
-	fxch  
-	fyl2x 
+	fxch 				#troca st(1) com st(0) 
+	fyl2x 				#calcula log na base 2
 
 	fxch 
 
