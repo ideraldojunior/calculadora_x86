@@ -356,7 +356,7 @@ arranjo:
 	push %r8
 
 	movq a, %rax
-	subq a, %rax
+	subq b, %rax
 	movq %rax, f
 	call fatorial
 	movq %rax, %rbx
