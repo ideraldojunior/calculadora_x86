@@ -423,7 +423,9 @@ inverso:
 	movq %rsp, %rbp
 
 	fld1
+	fxch %st(1)
 	call divisao
+
 	jmp desempilha
 
 
