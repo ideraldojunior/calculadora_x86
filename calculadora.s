@@ -451,17 +451,19 @@ log:
 	movq %rsp, %rbp
 	
 	fld1
-	fxch #inverte st(1) e st(0)
+	fxch %st(1) 
 	fyl2x #b 
 
+	fxch %st(1)
+
 	fld1
-	fld a
-	fyl2x #a  
+	fxch %st(1)
+	fyl2x   
 	
 	fdiv %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
-	
+
 	jmp desempilha
 
 
