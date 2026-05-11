@@ -458,11 +458,7 @@ log:
 	fxch %st(1)
 	fyl2x   
 	
-	fdiv %st(1), %st(0)
-	fstl resultado
-	movsd resultado, %xmm0
-	
-	
+	call divisao
 	jmp desempilha
 
 
