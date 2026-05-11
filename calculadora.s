@@ -252,7 +252,9 @@ sair_programa:
 	je main
 
 	cmpb $'n', cont
-	jne sair_programa
+	je fim_programa
+	jmp sair_programa
+	
 
 #OPERAÇÕES
 
