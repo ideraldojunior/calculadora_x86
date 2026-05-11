@@ -458,6 +458,7 @@ log:
 	fxch %st(1)
 	fyl2x   
 	
+	fxch
 	call divisao
 	jmp desempilha
 
