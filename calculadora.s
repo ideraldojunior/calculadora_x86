@@ -1,6 +1,6 @@
 .global main
 .data
-	entrada:	    .asciz	"\nInsira a operação:"
+	entrada:	    .asciz	"\nInsira a operação:\n"
 
 	err:		    .asciz  "err: Operação invalida!\n"
 	err_div:	    .asciz	"err: Divisão por zero!\n"
@@ -17,10 +17,10 @@
 	fmt3:		    .asciz  "%lf"
 
 	um_float:       .double 1.0
-	zero_float:     .double 0.0 
+	zero_float:     .double 0.0
 
 .bss
-	.lcomm	operacao, 1 
+	.lcomm	operacao, 1
 	.lcomm	a, 8
 	.lcomm	b, 8
 	.lcomm	f, 8
@@ -51,7 +51,7 @@ main:
 
 	jmp acha_operacao
 
-fim_programa: 
+fim_programa:
 	pop %rbp
 	ret
 
@@ -60,7 +60,7 @@ acha_operacao:
 	cmpb $'!', operacao
 	jne tenta_inverso
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	ja operacao_invalida
 
@@ -75,7 +75,7 @@ tenta_inverso:
 	cmpb $'i', operacao
 	jne tenta_quadrada
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	je erro_inverso
 
@@ -86,7 +86,7 @@ tenta_quadrada:
 	cmpb $'r', operacao
 	jne tenta_proximo_primo
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	jae erro_raiz
 
@@ -97,8 +97,11 @@ tenta_proximo_primo:
 	cmpb $'p', operacao
 	jne tenta_soma
 
+	movsd a, %xmm0          # carrega o float
+	cvttsd2si %xmm0, %r8    # converte para inteiro e coloca em %r8
+
 	call proximoprimo
-	jmp imprime_resultado_float
+	jmp imprime_resultado_int
 
 tenta_soma:
 	#SEGUNDO operando
@@ -132,7 +135,7 @@ tenta_divisao:
 	cmpb $'/', operacao
 	jne tenta_exponenciacao
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	je erro_divisao_zero
 
@@ -156,7 +159,7 @@ tenta_combinacao:
 	jne tenta_arranjos
 
 	fcomi %st(1), %st(0)
-	ja operacao_invalida 
+	ja operacao_invalida
 
 	movsd a, %xmm0
 	cvttsd2si %xmm0, %r8
@@ -176,7 +179,7 @@ tenta_arranjos:
 	fcomi %st(1), %st(0)
 	ja operacao_invalida
 
-	movsd a, %xmm0    #converte a para inteiro 
+	movsd a, %xmm0    #converte a para inteiro
 	cvttsd2si %xmm0, %r8
 	movq %r8, a
 
@@ -190,16 +193,16 @@ tenta_arranjos:
 tenta_log:
 	cmpb $'l', operacao
 	jne operacao_invalida
-	
-	fldz 
+
+	fldz
 	fcomip %st(2), %st(0)
 	jae operacao_invalida
 
-	fld1 
+	fld1
 	fcomip %st(1), %st(0)
-	je operacao_invalida 
+	je operacao_invalida
 
-	fldz 
+	fldz
 	fcomip %st(1), %st(0)
 	ja operacao_invalida
 
@@ -208,17 +211,17 @@ tenta_log:
 
 #ERROS
 erro_divisao_zero:
-	movq $err_div, %rdi 
+	movq $err_div, %rdi
 	call printf
 	jmp sair_programa
 
 erro_raiz:
-	movq $err_raiz, %rdi 
+	movq $err_raiz, %rdi
 	call printf
 	jmp sair_programa
 
 erro_inverso:
-	movq $err_inv, %rdi 
+	movq $err_inv, %rdi
 	call printf
 	jmp sair_programa
 
@@ -260,8 +263,8 @@ sair_programa:
 soma:
 	push %rbp
 	movq %rsp, %rbp
-	
-	fadd %st(1), %st(0) 
+
+	fadd %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
 
@@ -271,8 +274,8 @@ soma:
 subtracao:
 	push %rbp
 	movq %rsp, %rbp
-	
-	fsubr %st(1), %st(0) 
+
+	fsubr %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
 
@@ -282,7 +285,7 @@ subtracao:
 divisao:
 	push %rbp
 	movq %rsp, %rbp
-	
+
 	fdivr %st(1), %st(0)
 	fstl resultado
 	movsd resultado, %xmm0
@@ -300,16 +303,16 @@ multiplicacao:
 
 	jmp desempilha
 
-#EXPONENCIAÇÃO 
+#EXPONENCIAÇÃO
 exponenciacao:
 	push %rbp
 	movq %rsp, %rbp
 	push %rcx
 
-	movq b, %rcx  
+	movq b, %rcx
 	fstp %st(0) #praticamente um pop
 	fld1
-	jmp loop_exp 
+	jmp loop_exp
 
 loop_exp:
 	cmpq $0, %rcx
@@ -318,7 +321,7 @@ loop_exp:
 	call multiplicacao
 	decq %rcx
 	jmp loop_exp
-	
+
 fim_loop_exp:
 	fstl resultado
 	movsd resultado, %xmm0
@@ -331,7 +334,7 @@ combinacao:
 	push %rbp
 	movq %rsp, %rbp
 	push %rbx
-	push %rcx 
+	push %rcx
 	push %r8
 
 	movq b, %r8
@@ -352,7 +355,7 @@ combinacao:
 arranjo:
 	push %rbp
 	movq %rsp, %rbp
-	push %rbx 
+	push %rbx
 	push %r8
 
 	movq a, %rax
@@ -378,7 +381,7 @@ fatorial:
 	movq %rsp, %rbp
 	push %rcx
 
-	movq $1, %rax  
+	movq $1, %rax
 	movq f, %rcx
 
 	jmp loop_fat
@@ -411,8 +414,8 @@ inverso:
 quadrada:
 	push %rbp
 	movq %rsp, %rbp
-	
-	fsqrt 
+
+	fsqrt
 	fstl resultado
 	movsd resultado, %xmm0
 
@@ -422,31 +425,68 @@ quadrada:
 log:
 	push %rbp
 	movq %rsp, %rbp
-	
-	fld1 
-	fxch 				#troca st(1) com st(0) 
-	fyl2x 				#calcula log na base 2
-
-	fxch 
 
 	fld1
-	fxch 
-	fyl2x   
-	
+	fxch 				#troca st(1) com st(0)
+	fyl2x 				#calcula log na base 2
+
+	fxch
+
+	fld1
+	fxch
+	fyl2x
+
 	fxch
 	call divisao
 	jmp desempilha
 
-#PRIXMOPRIMO
+#PROXIMOPRIMO
 proximoprimo:
 	push %rbp
 	movq %rsp, %rbp
-	
+    push %rcx
+
+    loop_busca_primo:
+        addq $1, %r8
+
+        cmpq $2, %r8
+        jl eh_menor_2
+        je fim_proximoprimo
+
+        movq %r8, %rax
+        xor %rdx, %rdx
+        movq $2, %rcx
+        divq %rcx
+        cmpq $0, %rdx
+        je loop_busca_primo
+
+        movq $3, %rcx
+
+        loop_verifica_impares:
+            movq %rcx, %rax
+            imulq %rcx, %rax
+            cmpq %r8, %rax
+            jg fim_proximoprimo
+
+            movq %r8, %rax
+            xor %rdx, %rdx
+            divq %rcx
+            cmpq $0, %rdx
+            je loop_busca_primo
+
+            addq $2, %rcx
+            jmp loop_verifica_impares
+
+    eh_menor_2:
+        movq $2, %r8
+
+    fim_proximoprimo:
+        movq %r8, %rax
+
+    pop %rcx
 	jmp desempilha
 
-
-
-desempilha: 
+desempilha:
 	movq %rbp, %rsp
 	pop %rbp
 	ret
