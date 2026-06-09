@@ -32,24 +32,11 @@
 main:
 	finit
 	push %rbp
-
-	#MENSAGEM
+	
 	movq $entrada, %rdi
 	call printf
 
-	#PRIMEIRO operando
-	movq $fmt3, %rdi
-	movq $a, %rsi
-	call scanf
-
-	fldl a #adiciona a na pilha
-
-	#OPERACAO
-	movq $fmt2, %rdi
-	movq $operacao, %rsi
-	call scanf
-
-	jmp controlador
+	call controlador
 
 fim_programa:
 	pop %rbp
@@ -57,10 +44,29 @@ fim_programa:
 
 #=========================
 #CONTROLADOR
-#Realiza a busca da operacao solicitada 
+#Realiza a busca da operacao solicitada
+#Abordagem:
+#Inicia a checagem pelas operações que só envolvem um operando, se não for nenhum
+#desses casos, pede o segundo operando para o usuário e realiza as outras checagens
+#com operações envolvendo dois operendos, e, novamente, caso não seja nenhum desses casos,
+#finaliza a checagem com um erro.  
 #=========================
 
 controlador:
+
+	#Input: primeiro operando
+	movq $fmt3, %rdi
+	movq $a, %rsi
+	call scanf
+
+	fldl a #adiciona a na pilha como float
+
+	#Input: operador
+	movq $fmt2, %rdi
+	movq $operacao, %rsi
+	call scanf
+
+
 
 	tenta_fatorial:
 		cmpb $'!', operacao
@@ -109,22 +115,25 @@ controlador:
 		cmpb $'p', operacao
 		jne tenta_soma
 
-		movsd a, %xmm0          # carrega o float
-		cvttsd2si %xmm0, %r8    # converte para inteiro e coloca em %r8
+		movsd a, %xmm0          
+		cvttsd2si %xmm0, %r8    
 
 		call proximoprimo
 		jmp imprime_resultado_int
 
 
 
-	tenta_soma:
-		#SEGUNDO operando
+	segundo_operando:
 		movq $fmt3, %rdi
 		movq $b, %rsi
 		call scanf
 
 		fldl b
+		jmp tenta_soma
 
+
+
+	tenta_soma:
 		cmpb $'+', operacao
 		jne tenta_sub
 
@@ -249,15 +258,21 @@ erro_divisao_zero:
 	call printf
 	jmp sair_programa
 
+
+
 erro_raiz:
 	movq $err_raiz, %rdi
 	call printf
 	jmp sair_programa
 
+
+
 erro_inverso:
 	movq $err_inv, %rdi
 	call printf
 	jmp sair_programa
+
+
 
 operacao_invalida:
 	movq $err, %rdi
@@ -271,10 +286,6 @@ operacao_invalida:
 #INPUT
 #=========================
 
-#===========
-#Impressão de float
-#===========
-
 imprime_resultado_float:
 	movq $saida_float, %rdi
 	movq $1, %rax
@@ -283,10 +294,6 @@ imprime_resultado_float:
 
 
 
-#===========
-#Impressão de inteiro
-#===========
-
 imprime_resultado_int:
 	movq $saida_int, %rdi
 	movq %rax, %rsi
@@ -294,10 +301,6 @@ imprime_resultado_int:
 	jmp sair_programa
 
 
-
-#===========
-#Input para finalizar programa
-#===========
 
 sair_programa:
 	movq $continuar, %rdi
