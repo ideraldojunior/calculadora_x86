@@ -13,7 +13,7 @@
 	saida_float:	.asciz	"Resultado: %lf \n"
 
 	fmt1:		    .asciz	"%lld"
-	fmt2:		    .asciz	"%c"
+	fmt2:		    .asciz	" %c"
 	fmt3:		    .asciz  "%lf"
 
 	um_float:       .double 1.0
