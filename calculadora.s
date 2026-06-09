@@ -113,7 +113,7 @@ controlador:
 
 	tenta_proximo_primo:
 		cmpb $'p', operacao
-		jne tenta_soma
+		jne segundo_operando
 
 		movsd a, %xmm0          
 		cvttsd2si %xmm0, %r8    
