@@ -36,7 +36,7 @@ main:
 	movq $entrada, %rdi
 	call printf
 
-	call controlador
+	jmp controlador
 
 fim_programa:
 	pop %rbp
