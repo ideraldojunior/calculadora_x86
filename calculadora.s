@@ -13,7 +13,7 @@
 	saida_float:	.asciz	"Resultado: %lf \n"
 
 	fmt1:		    .asciz	"%lld"
-	fmt2:		    .asciz	" %c"
+	fmt2:		    .asciz	"%c"
 	fmt3:		    .asciz  "%lf"
 
 	um_float:       .double 1.0
@@ -49,167 +49,201 @@ main:
 	movq $operacao, %rsi
 	call scanf
 
-	jmp acha_operacao
+	jmp controlador
 
 fim_programa:
 	pop %rbp
 	ret
 
-#PROCURA A OPERAÇÃO CORRESPONDENTE
-acha_operacao:
-	cmpb $'!', operacao
-	jne tenta_inverso
+#=========================
+#CONTROLADOR
+#Realiza a busca da operacao solicitada 
+#=========================
 
-	fldz
-	fcomip %st(1), %st(0)
-	ja operacao_invalida
+controlador:
 
-	movsd a, %xmm0
-	cvttsd2si %xmm0, %r8
-	movq %r8, f
+	tenta_fatorial:
+		cmpb $'!', operacao
+		jne tenta_inverso
 
-	call fatorial
-	jmp imprime_resultado_int
+		fldz
+		fcomip %st(1), %st(0)
+		ja operacao_invalida
 
-tenta_inverso:
-	cmpb $'i', operacao
-	jne tenta_quadrada
+		movsd a, %xmm0
+		cvttsd2si %xmm0, %r8
+		movq %r8, f
 
-	fldz
-	fcomip %st(1), %st(0)
-	je erro_inverso
+		call fatorial
+		jmp imprime_resultado_int
 
-	call inverso
-	jmp imprime_resultado_float
 
-tenta_quadrada:
-	cmpb $'r', operacao
-	jne tenta_proximo_primo
 
-	fldz
-	fcomip %st(1), %st(0)
-	jae erro_raiz
+	tenta_inverso:
+		cmpb $'i', operacao
+		jne tenta_quadrada
 
-	call quadrada
-	jmp imprime_resultado_float
+		fldz
+		fcomip %st(1), %st(0)
+		je erro_inverso
 
-tenta_proximo_primo:
-	cmpb $'p', operacao
-	jne tenta_soma
+		call inverso
+		jmp imprime_resultado_float
 
-	movsd a, %xmm0          # carrega o float
-	cvttsd2si %xmm0, %r8    # converte para inteiro e coloca em %r8
 
-	call proximoprimo
-	jmp imprime_resultado_int
 
-tenta_soma:
-	#SEGUNDO operando
-	movq $fmt3, %rdi
-	movq $b, %rsi
-	call scanf
+	tenta_quadrada:
+		cmpb $'r', operacao
+		jne tenta_proximo_primo
 
-	fldl b
+		fldz
+		fcomip %st(1), %st(0)
+		jae erro_raiz
 
-	cmpb $'+', operacao
-	jne tenta_sub
+		call quadrada
+		jmp imprime_resultado_float
 
-	call soma
-	jmp imprime_resultado_float
 
-tenta_sub:
-	cmpb $'-', operacao
-	jne tenta_multiplicacao
 
-	call subtracao
-	jmp imprime_resultado_float
+	tenta_proximo_primo:
+		cmpb $'p', operacao
+		jne tenta_soma
 
-tenta_multiplicacao:
-	cmpb $'*', operacao
-	jne tenta_divisao
+		movsd a, %xmm0          # carrega o float
+		cvttsd2si %xmm0, %r8    # converte para inteiro e coloca em %r8
 
-	call multiplicacao
-	jmp imprime_resultado_float
+		call proximoprimo
+		jmp imprime_resultado_int
 
-tenta_divisao:
-	cmpb $'/', operacao
-	jne tenta_exponenciacao
 
-	fldz
-	fcomip %st(1), %st(0)
-	je erro_divisao_zero
 
-	call divisao
-	jmp imprime_resultado_float
+	tenta_soma:
+		#SEGUNDO operando
+		movq $fmt3, %rdi
+		movq $b, %rsi
+		call scanf
 
-tenta_exponenciacao:
-	cmpb $'^', operacao
-	jne tenta_combinacao
+		fldl b
 
-	#PERGUNTAR SE É INTEIRO
-	movsd b, %xmm0
-	cvttsd2si %xmm0, %r8
-	movq %r8, b
+		cmpb $'+', operacao
+		jne tenta_sub
 
-	call exponenciacao
-	jmp imprime_resultado_float
+		call soma
+		jmp imprime_resultado_float
 
-tenta_combinacao:
-	cmpb $'c', operacao
-	jne tenta_arranjos
 
-	fcomi %st(1), %st(0)
-	ja operacao_invalida
 
-	movsd a, %xmm0
-	cvttsd2si %xmm0, %r8
-	movq %r8, a
+	tenta_sub:
+		cmpb $'-', operacao
+		jne tenta_multiplicacao
 
-	movsd b, %xmm0
-	cvttsd2si %xmm0, %r8
-	movq %r8, b
+		call subtracao
+		jmp imprime_resultado_float
 
-	call combinacao
-	jmp imprime_resultado_int
 
-tenta_arranjos:
-	cmpb $'a', operacao
-	jne tenta_logaritmo
 
-	fcomi %st(1), %st(0)
-	ja operacao_invalida
+	tenta_multiplicacao:
+		cmpb $'*', operacao
+		jne tenta_divisao
 
-	movsd a, %xmm0    #converte a para inteiro
-	cvttsd2si %xmm0, %r8
-	movq %r8, a
+		call multiplicacao
+		jmp imprime_resultado_float
 
-	movsd b, %xmm0     #converte b para inteiro
-	cvttsd2si %xmm0, %r8
-	movq %r8, b
 
-	call arranjo
-	jmp imprime_resultado_int
 
-tenta_logaritmo:
-	cmpb $'l', operacao
-	jne operacao_invalida
+	tenta_divisao:
+		cmpb $'/', operacao
+		jne tenta_exponenciacao
 
-	fldz
-	fcomip %st(2), %st(0)
-	jae operacao_invalida
+		fldz
+		fcomip %st(1), %st(0)
+		je erro_divisao_zero
 
-	fld1
-	fcomip %st(1), %st(0)
-	je operacao_invalida
+		call divisao
+		jmp imprime_resultado_float
 
-	fldz
-	fcomip %st(1), %st(0)
-	ja operacao_invalida
 
-	call logaritmo
-	jmp imprime_resultado_float
 
-#ERROS
+	tenta_exponenciacao:
+		cmpb $'^', operacao
+		jne tenta_combinacao
+
+		#PERGUNTAR SE É INTEIRO
+		movsd b, %xmm0
+		cvttsd2si %xmm0, %r8
+		movq %r8, b
+
+		call exponenciacao
+		jmp imprime_resultado_float
+
+
+
+	tenta_combinacao:
+		cmpb $'c', operacao
+		jne tenta_arranjos
+
+		fcomi %st(1), %st(0)
+		ja operacao_invalida
+
+		movsd a, %xmm0
+		cvttsd2si %xmm0, %r8
+		movq %r8, a
+
+		movsd b, %xmm0
+		cvttsd2si %xmm0, %r8
+		movq %r8, b
+
+		call combinacao
+		jmp imprime_resultado_int
+
+
+
+	tenta_arranjos:
+		cmpb $'a', operacao
+		jne tenta_logaritmo
+
+		fcomi %st(1), %st(0)
+		ja operacao_invalida
+
+		movsd a, %xmm0    #converte a para inteiro
+		cvttsd2si %xmm0, %r8
+		movq %r8, a
+
+		movsd b, %xmm0     #converte b para inteiro
+		cvttsd2si %xmm0, %r8
+		movq %r8, b
+
+		call arranjo
+		jmp imprime_resultado_int
+
+
+
+	tenta_logaritmo:
+		cmpb $'l', operacao
+		jne operacao_invalida
+
+		fldz
+		fcomip %st(2), %st(0)
+		jae operacao_invalida
+
+		fld1
+		fcomip %st(1), %st(0)
+		je operacao_invalida
+
+		fldz
+		fcomip %st(1), %st(0)
+		ja operacao_invalida
+
+		call logaritmo
+		jmp imprime_resultado_float
+
+
+
+
+#=========================
+#IMPRESSÕES DE ERRO
+#=========================
+
 erro_divisao_zero:
 	movq $err_div, %rdi
 	call printf
@@ -230,18 +264,40 @@ operacao_invalida:
 	call printf
 	jmp sair_programa
 
-#SAÍDA
+
+
+
+#=========================
+#INPUT
+#=========================
+
+#===========
+#Impressão de float
+#===========
+
 imprime_resultado_float:
 	movq $saida_float, %rdi
 	movq $1, %rax
 	call printf
 	jmp sair_programa
 
+
+
+#===========
+#Impressão de inteiro
+#===========
+
 imprime_resultado_int:
 	movq $saida_int, %rdi
 	movq %rax, %rsi
 	call printf
 	jmp sair_programa
+
+
+
+#===========
+#Input para finalizar programa
+#===========
 
 sair_programa:
 	movq $continuar, %rdi
@@ -256,6 +312,7 @@ sair_programa:
 
 	cmpb $'n', cont
 	jne sair_programa
+
 
 
 
@@ -339,22 +396,21 @@ exponenciacao:
 	movq b, %rcx
 	fstp %st(0) 
 	fld1
-	jmp loop_exp
 
-loop_exp:
-	cmpq $0, %rcx
-	jle fim_loop_exp
+	loop_exp:
+		cmpq $0, %rcx
+		jle fim_loop_exp
 
-	call multiplicacao
-	decq %rcx
-	jmp loop_exp
+		call multiplicacao
+		decq %rcx
+		jmp loop_exp
 
-fim_loop_exp:
-	fstl resultado
-	movsd resultado, %xmm0
+	fim_loop_exp:
+		fstl resultado
+		movsd resultado, %xmm0
 
-	pop %rcx
-	jmp desempilha
+		pop %rcx
+		jmp desempilha
 
 
 #===========
@@ -425,20 +481,18 @@ fatorial:
 	movq $1, %rax
 	movq f, %rcx
 
-	jmp loop_fat
+	loop_fat:
+		cmpq $0, %rcx
+		jle fim_loop_fat
 
-loop_fat:
-	cmpq $0, %rcx
-	jle fim_loop_fat
+		imulq %rcx
+		decq %rcx
 
-	imulq %rcx
-	decq %rcx
+		jmp loop_fat
 
-	jmp loop_fat
-
-fim_loop_fat:
-	pop %rcx
-	jmp desempilha
+	fim_loop_fat:
+		pop %rcx
+		jmp desempilha
 
 
 
@@ -546,6 +600,14 @@ proximoprimo:
 
     pop %rcx
 	jmp desempilha
+
+
+
+
+#=========================
+#Desempilha
+#Obs: existe apenas para enxugar o código
+#=========================
 
 desempilha:
 	movq %rbp, %rsp
