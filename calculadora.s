@@ -4,8 +4,8 @@
 
 	err:		    .asciz  "err: Operação invalida!\n"
 	err_div:	    .asciz	"err: Divisão por zero!\n"
-	err_raiz:	    .asciz  "err: Operando não pode ser negativo"
-	err_inv:	    .asciz  "err: Operando não pode ser zero"
+	err_raiz:	    .asciz  "err: Operando não pode ser negativo\n"
+	err_inv:	    .asciz  "err: Operando não pode ser zero\n"
 
 	continuar:      .asciz	"\nContinuar? (s) (n):"
 
@@ -15,9 +15,6 @@
 	fmt1:		    .asciz	"%lld"
 	fmt2:		    .asciz	" %c"
 	fmt3:		    .asciz  "%lf"
-
-	um_float:       .double 1.0
-	zero_float:     .double 0.0 
 
 .bss
 	.lcomm	operacao, 1 
