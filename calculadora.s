@@ -66,7 +66,7 @@ controlador:
 	movq $operacao, %rsi
 	call scanf
 
-
+	jmp tenta_fatorial
 
 	tenta_fatorial:
 		cmpb $'!', operacao
