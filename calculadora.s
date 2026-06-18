@@ -29,9 +29,6 @@ main:
 	finit
 	push %rbp
 	
-	movq $entrada, %rdi
-	call printf
-
 	call controlador
 
 	pop %rbp
@@ -39,18 +36,9 @@ main:
 
 
 controlador:
-
-	#Input: primeiro operando
-	movq $fmt3, %rdi
-	movq $a, %rsi
-	call scanf
-
-	fldl a
-
-	#Input: operador
-	movq $fmt2, %rdi
-	movq $operacao, %rsi
-	call scanf
+	call mensagem
+	call primeiro_operando
+	call operacao
 
 	cmpb $'!', operacao
 	je trata_fatorial
@@ -64,12 +52,7 @@ controlador:
 	cmpb $'p', operacao
 	je trata_primo
 
-	#Input: segundo operando
-	movq $fmt3, %rdi
-	movq $b, %rsi
-	call scanf
-
-	fldl b
+	call segundo_operando
 
 	cmpb $'+', operacao
 	je trata_soma
@@ -233,55 +216,141 @@ controlador:
 
 
 
-	#=========================
-	#IMPRESSÕES DE ERRO
-	#=========================
+#=========================
+#INPUT
+#=========================
 
-	erro_divisao_zero:
-		movq $err_div, %rdi
-		call printf
-		jmp controlador
+mensagem:
+    push %rbp
+    movq %rsp, %rbp
 
+	movq $entrada, %rdi
+	call printf
 
-
-	erro_raiz:
-		movq $err_raiz, %rdi
-		call printf
-		jmp controlador
-
-
-
-	erro_inverso:
-		movq $err_inv, %rdi
-		call printf
-		jmp controlador
+	movq %rbp, %rsp
+	pop %rbp
+	ret
 
 
 
-	operacao_invalida:
-		movq $err, %rdi
-		call printf
-		jmp controlador
+primeiro_operando:
+    push %rbp
+    movq %rsp, %rbp
+
+	movq $fmt3, %rdi
+	movq $a, %rsi
+	call scanf
+
+	fldl a
+
+	movq %rbp, %rsp
+	pop %rbp
+	ret
+
+operador:
+    push %rbp
+    movq %rsp, %rbp
+
+	movq $fmt2, %rdi
+	movq $operacao, %rsi
+	call scanf
+
+	movq %rbp, %rsp
+	pop %rbp
+	ret
+
+
+segundo_operando:
+    push %rbp
+    movq %rsp, %rbp
+
+	movq $fmt3, %rdi
+	movq $b, %rsi
+	call scanf
+
+	fldl b
+
+	movq %rbp, %rsp
+	pop %rbp
+	ret
+
+
+#=========================
+#OUTPUT
+#=========================
 
 
 
+erro_divisao_zero:
+    push %rbp
+    movq %rsp, %rbp
 
-	#=========================
-	#INPUT
-	#=========================
+	movq $err_div, %rdi
+	call printf
+	jmp controlador
 
-	imprime_resultado_float:
-		movq $saida_float, %rdi
-		movq $1, %rax
-		call printf
-		jmp controlador
+	movq %rbp, %rsp
+	pop %rbp
+	ret
 
+erro_raiz:
+    push %rbp
+    movq %rsp, %rbp
 
+	movq $err_raiz, %rdi
+	call printf
+	jmp controlador
 
-	imprime_resultado_int:
-		movq $saida_int, %rdi
-		movq %rax, %rsi
-		call printf
-		jmp controlador
+	movq %rbp, %rsp
+	pop %rbp
+	ret
 
+erro_inverso:
+    push %rbp
+    movq %rsp, %rbp
 
+	movq $err_inv, %rdi
+	call printf
+	jmp controlador
+
+	movq %rbp, %rsp
+	pop %rbp
+	ret
+
+operacao_invalida:
+    push %rbp
+    movq %rsp, %rbp
+
+	movq $err, %rdi
+	call printf
+	jmp controlador
+
+	movq %rbp, %rsp
+	pop %rbp
+	ret
+
+imprime_resultado_float:
+    push %rbp
+    movq %rsp, %rbp
+
+	movq $saida_float, %rdi
+	movq $1, %rax
+	call printf
+	jmp controlador
+
+	movq %rbp, %rsp
+	pop %rbp
+	ret
+
+imprime_resultado_int:
+    push %rbp
+    movq %rsp, %rbp
+	
+	movq $saida_int, %rdi
+	movq %rax, %rsi
+	call printf
+	jmp controlador
+
+	movq %rbp, %rsp
+	pop %rbp
+	ret
