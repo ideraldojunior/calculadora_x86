@@ -1,6 +1,6 @@
-global soma, subtracao, multiplicacao, divisao
-global exponenciacao, combinacao, inverso, fatorial
-global arranjo, logaritmo, quadrada, proximoprimo
+.global soma, subtracao, multiplicacao, divisao
+.global exponenciacao, combinacao, inverso, fatorial
+.global arranjo, logaritmo, quadrada, proximo_primo
 
 #===========
 #Soma
@@ -252,8 +252,8 @@ logaritmo:
 	movq %rsp, %rbp
 
 	fld1
-	fxch 				#troca st(1) com st(0)
-	fyl2x 				#calcula logaritmo na base 2
+	fxch
+	fyl2x
 
 	fxch
 
