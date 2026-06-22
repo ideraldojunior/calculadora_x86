@@ -1,6 +1,6 @@
-.global main
+.global main, a, b, f, resultado
 .data
-	entrada:	    .asciz	"\nInsira a operação:\n"
+	entrada:	    .asciz	"\nInsira a operação ou tecle (s) para sair:\n"
 
 	err:		    .asciz  "err: Operação invalida!\n"
 	err_div:	    .asciz	"err: Divisão por zero!\n"
@@ -18,27 +18,29 @@
 
 
 .bss
-	.lcomm	operacao, 1
-	.lcomm	a, 8
-	.lcomm	b, 8
-	.lcomm	f, 8
+	.comm	operacao, 1
+	.comm  resultado, 8
+	.comm	a, 8
+	.comm	b, 8
+	.comm	f, 8
 
 .text
 
 main:
-	finit
-	push %rbp
-	
 	call controlador
 
-	pop %rbp
-	ret
-
+	movq $60, %rax
+	movq $0, %rdi 
+	syscall
 
 controlador:
+	finit
 	call mensagem
 	call primeiro_operando
-	call operacao
+	call operador
+
+	cmpb $'s', operacao
+	je sair
 
 	cmpb $'!', operacao
 	je trata_fatorial
@@ -50,7 +52,7 @@ controlador:
 	je trata_quadrada
 
 	cmpb $'p', operacao
-	je trata_primo
+	je trata_proximo_primo
 
 	call segundo_operando
 
@@ -78,41 +80,49 @@ controlador:
 	cmpb $'l', operacao
 	je trata_logaritmo
 
-	movq %rbp, %rsp
-	pop %rbp
-	ret
+	jmp controlador
 
 	trata_fatorial:
 		fldz
 		fcomip %st(1), %st(0)
-		ja operacao_invalida
+		ja chama_erro
 
 		movsd a, %xmm0
 		cvttsd2si %xmm0, %r8
 		movq %r8, f
 
 		call fatorial
-		jmp imprime_resultado_int
-
-
+		call imprime_resultado_int
+		jmp controlador
+	
 
 	trata_inverso:
 		fldz
 		fcomip %st(1), %st(0)
-		je erro_inverso
+		je chama_erro_inverso
 
 		call inverso
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
+
+		chama_erro_inverso: 
+			call erro_inverso
+			jmp controlador
 
 
 
 	trata_quadrada:
 		fldz
 		fcomip %st(1), %st(0)
-		jae erro_raiz
+		jae chama_erro_raiz
 
 		call quadrada
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
+
+		chama_erro_raiz: 
+			call erro_raiz
+			jmp controlador
 
 
 
@@ -120,36 +130,45 @@ controlador:
 		movsd a, %xmm0          
 		cvttsd2si %xmm0, %r8    
 
-		call proximoprimo
-		jmp imprime_resultado_int
+		call proximo_primo
+		call imprime_resultado_int
+		jmp controlador
 
 
 
 	trata_soma:
 		call soma
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
 
 
 
-	trata_sub:
+	trata_subtracao:
 		call subtracao
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
 
 
 
 	trata_multiplicacao:
 		call multiplicacao
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
 
 
 
 	trata_divisao:
 		fldz
 		fcomip %st(1), %st(0)
-		je erro_divisao_zero
+		je chama_erro_divisao
 
 		call divisao
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
+
+		chama_erro_divisao: 
+			call erro_divisao_zero
+			jmp controlador
 
 
 
@@ -159,13 +178,14 @@ controlador:
 		movq %r8, b
 
 		call exponenciacao
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
 
 
 
 	trata_combinacao:
 		fcomi %st(1), %st(0)
-		ja operacao_invalida
+		ja chama_erro
 
 		movsd a, %xmm0
 		cvttsd2si %xmm0, %r8
@@ -176,42 +196,53 @@ controlador:
 		movq %r8, b
 
 		call combinacao
-		jmp imprime_resultado_int
+		call imprime_resultado_int
+		jmp controlador
 
 
 
-	trata_arranjos:
+	trata_arranjo:
 		fcomi %st(1), %st(0)
-		ja operacao_invalida
+		ja chama_erro
 
-		movsd a, %xmm0    #converte a para inteiro
+		movsd a, %xmm0
 		cvttsd2si %xmm0, %r8
 		movq %r8, a
 
-		movsd b, %xmm0     #converte b para inteiro
+		movsd b, %xmm0
 		cvttsd2si %xmm0, %r8
 		movq %r8, b
 
 		call arranjo
-		jmp imprime_resultado_int
+		call imprime_resultado_int
+		jmp controlador
 
 
 
 	trata_logaritmo:
 		fldz
 		fcomip %st(2), %st(0)
-		jae operacao_invalida
+		jae chama_erro
 
 		fld1
 		fcomip %st(1), %st(0)
-		je operacao_invalida
+		je chama_erro
 
 		fldz
 		fcomip %st(1), %st(0)
-		ja operacao_invalida
-
+		ja chama_erro
+			
 		call logaritmo
-		jmp imprime_resultado_float
+		call imprime_resultado_float
+		jmp controlador
+
+
+	chama_erro: 
+		call operacao_invalida
+		jmp controlador
+	
+	sair: 
+		ret
 
 
 
@@ -225,12 +256,12 @@ mensagem:
     movq %rsp, %rbp
 
 	movq $entrada, %rdi
+	movq $0, %rax
 	call printf
 
 	movq %rbp, %rsp
 	pop %rbp
 	ret
-
 
 
 primeiro_operando:
@@ -239,6 +270,7 @@ primeiro_operando:
 
 	movq $fmt3, %rdi
 	movq $a, %rsi
+	movq $0, %rax
 	call scanf
 
 	fldl a
@@ -247,12 +279,14 @@ primeiro_operando:
 	pop %rbp
 	ret
 
+
 operador:
     push %rbp
     movq %rsp, %rbp
 
 	movq $fmt2, %rdi
 	movq $operacao, %rsi
+	movq $0, %rax
 	call scanf
 
 	movq %rbp, %rsp
@@ -266,6 +300,7 @@ segundo_operando:
 
 	movq $fmt3, %rdi
 	movq $b, %rsi
+	movq $0, %rax
 	call scanf
 
 	fldl b
@@ -280,54 +315,57 @@ segundo_operando:
 #=========================
 
 
-
 erro_divisao_zero:
     push %rbp
     movq %rsp, %rbp
 
 	movq $err_div, %rdi
+	movq $0, %rax
 	call printf
-	jmp controlador
 
 	movq %rbp, %rsp
 	pop %rbp
 	ret
+
 
 erro_raiz:
     push %rbp
     movq %rsp, %rbp
 
 	movq $err_raiz, %rdi
+	movq $0, %rax
 	call printf
-	jmp controlador
 
 	movq %rbp, %rsp
 	pop %rbp
 	ret
+
 
 erro_inverso:
     push %rbp
     movq %rsp, %rbp
 
 	movq $err_inv, %rdi
+	movq $0, %rax
 	call printf
-	jmp controlador
 
 	movq %rbp, %rsp
 	pop %rbp
 	ret
+
 
 operacao_invalida:
     push %rbp
     movq %rsp, %rbp
 
 	movq $err, %rdi
+	movq $0, %rax
 	call printf
-	jmp controlador
 
 	movq %rbp, %rsp
 	pop %rbp
 	ret
+
 
 imprime_resultado_float:
     push %rbp
@@ -336,20 +374,20 @@ imprime_resultado_float:
 	movq $saida_float, %rdi
 	movq $1, %rax
 	call printf
-	jmp controlador
 
 	movq %rbp, %rsp
 	pop %rbp
 	ret
 
+
 imprime_resultado_int:
     push %rbp
     movq %rsp, %rbp
-	
+
 	movq $saida_int, %rdi
 	movq %rax, %rsi
+	movq $0, %rax
 	call printf
-	jmp controlador
 
 	movq %rbp, %rsp
 	pop %rbp
