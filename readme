@@ -1,0 +1,36 @@
+1. (passagem de parametros) Trocar bss por registradores padrões do x64
+
+2. Implementar o lib.s
+
+3. Colocar o function
+   Adaptar tudo pra função
+
+4. Só vai ter a função main
+
+5. Tirar o jmp desempilha
+
+6. Empilhar e desempilhar os registradores
+
+7. Usar a memória apenas para alocar funções e armazenar um break
+para parar de procurar 
+
+    Função de 2 parametros e 1 parametro 
+
+    Conferir essa parte 
+
+    Fazer um call da operação
+
+8 (Bonus). Tirar lib.c da segunda (I/O)
+
+9. Tirar
+#Jump apenas dentro da função
+#Não precisara de pilha
+#TUDO É FUNÇÃO
+
+
+
+.bss
+	.lcomm	operacao, 1 -> %r10
+	.lcomm	a, 8 -> %r11
+	.lcomm	b, 8 -> %r12
+	.lcomm	cont, 1 -> %r13
