@@ -30,7 +30,7 @@ main:
 	call controlador
 
 	movq $60, %rax
-	movq $0, %rdi 
+	movq $0, %rdi
 	syscall
 
 controlador:
@@ -94,7 +94,7 @@ controlador:
 		call fatorial
 		call imprime_resultado_int
 		jmp controlador
-	
+
 
 	trata_inverso:
 		fldz
@@ -105,7 +105,7 @@ controlador:
 		call imprime_resultado_float
 		jmp controlador
 
-		chama_erro_inverso: 
+		chama_erro_inverso:
 			call erro_inverso
 			jmp controlador
 
@@ -120,15 +120,19 @@ controlador:
 		call imprime_resultado_float
 		jmp controlador
 
-		chama_erro_raiz: 
+		chama_erro_raiz:
 			call erro_raiz
 			jmp controlador
 
 
 
 	trata_proximo_primo:
-		movsd a, %xmm0          
-		cvttsd2si %xmm0, %r8    
+    	fldz
+		fcomip %st(1), %st(0)
+		ja chama_erro
+
+		movsd a, %xmm0
+		cvttsd2si %xmm0, %r8
 
 		call proximo_primo
 		call imprime_resultado_int
@@ -166,20 +170,35 @@ controlador:
 		call imprime_resultado_float
 		jmp controlador
 
-		chama_erro_divisao: 
+		chama_erro_divisao:
 			call erro_divisao_zero
 			jmp controlador
 
 
 
 	trata_exponenciacao:
-		movsd b, %xmm0
-		cvttsd2si %xmm0, %r8
-		movq %r8, b
+        fldl b(%rip)                # Expoente
+        fldl a(%rip)                # Base
 
-		call exponenciacao
-		call imprime_resultado_float
-		jmp controlador
+        fldz                        # Puxa um 0
+        fcomip %st(1), %st(0)       # Compara 0 com a base e dá pop
+        jbe executa_exp             # Se a base >= 0 pode calcular
+
+        fld1                        # Puxa um 1
+        fcomip %st(2), %st(0)       # Compara 1 com o expoente e dá pop
+        jbe executa_exp             # Se o expoente >= 1 pode calcular
+
+        # Caso base < 0 e expoente < 1
+        fstp %st(0)                 # limpa o topo da pilha
+        fstp %st(0)                 # limpa o topo da pilha
+
+        call erro_raiz
+        jmp controlador
+
+        executa_exp:
+    		call exponenciacao
+    		call imprime_resultado_float
+    		jmp controlador
 
 
 
@@ -231,17 +250,17 @@ controlador:
 		fldz
 		fcomip %st(1), %st(0)
 		ja chama_erro
-			
+
 		call logaritmo
 		call imprime_resultado_float
 		jmp controlador
 
 
-	chama_erro: 
+	chama_erro:
 		call operacao_invalida
 		jmp controlador
-	
-	sair: 
+
+	sair:
 		ret
 
 

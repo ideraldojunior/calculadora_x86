@@ -84,30 +84,30 @@ multiplicacao:
 #===========
 
 exponenciacao:
-	push %rbp
-	movq %rsp, %rbp
-	push %rcx
+    push %rbp
+    movq %rsp, %rbp
 
-	movq b, %rcx
-	fstp %st(0) 
-	fld1
+    fyl2x                   # %st(0) = y * log2(x)
 
-	loop_exp:
-		cmpq $0, %rcx
-		jle fim_loop_exp
+    fld %st(0)              # Duplica o resultado no topo
+    frndint                 # Arredonda %st(0) para o inteiro mais próximo
+    fsubr %st, %st(1)       # Subtrai o inteiro do original e obtêm a parte fracionária
+    fxch %st(1)             # Troca as posições
 
-		call multiplicacao
-		decq %rcx
-		jmp loop_exp
+    f2xm1                   # Calcula 2^(frac) - 1
+    fld1                    # Carrega o número 1.0 em %st(0)
+    faddp %st, %st(1)       # Soma 1.0 com (2^(frac) - 1)
 
-	fim_loop_exp:
-		fstl resultado
-		movsd resultado, %xmm0
+    fscale                  # %st(0) = (2^frac) * (2^int)
 
-		pop %rcx
-		movq %rbp, %rsp
-		pop %rbp
-		ret
+    fstp %st(1)             # Remove a parte inteira (%st(1)) do topo da pilha
+
+    fstl resultado
+    movsd resultado, %xmm0
+
+    movq %rbp, %rsp
+    pop %rbp
+    ret
 
 
 
@@ -319,4 +319,3 @@ proximo_primo:
 		movq %rbp, %rsp
 		pop %rbp
 		ret
-
