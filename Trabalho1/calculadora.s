@@ -177,20 +177,19 @@ controlador:
 
 
 	trata_exponenciacao:
-        fldl b(%rip)                # Expoente
-        fldl a(%rip)                # Base
+        fldl b(%rip)              
+        fldl a(%rip)              
 
-        fldz                        # Puxa um 0
-        fcomip %st(1), %st(0)       # Compara 0 com a base e dá pop
-        jbe executa_exp             # Se a base >= 0 pode calcular
+        fldz                    
+        fcomip %st(1), %st(0)       
+        jbe executa_exp       
 
-        fld1                        # Puxa um 1
-        fcomip %st(2), %st(0)       # Compara 1 com o expoente e dá pop
-        jbe executa_exp             # Se o expoente >= 1 pode calcular
+        fld1                       
+        fcomip %st(2), %st(0)      
+        jbe executa_exp            
 
-        # Caso base < 0 e expoente < 1
-        fstp %st(0)                 # limpa o topo da pilha
-        fstp %st(0)                 # limpa o topo da pilha
+        fstp %st(0)                 
+        fstp %st(0)               
 
         call erro_raiz
         jmp controlador
