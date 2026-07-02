@@ -5,8 +5,8 @@ Trabalho de PROG. P/ INTERF. HARDWARE E SOFTWARE
 ==============================================
 
 Integrantes:
-    Johnny Maia Fernandes ra: 140363
-    Ideraldo              ra: 
+    Johnny Maia Fernandes            ra: 140363
+    Ideraldo Luis Trentini Júnior    ra: 138318
 
 
 
