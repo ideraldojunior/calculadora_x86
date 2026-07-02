@@ -93,7 +93,7 @@ Exemplos:
 COMO COMPILAR E RODAR
 =======================
 
-entre no arquivo do trabalho em especifico e, aproveitando do arquivo MakeFile que apenas simplifica o uso do terminal,
+entre na pasta do trabalho em especifico e, aproveitando do arquivo MakeFile que apenas simplifica o uso do terminal,
 coloque:
 
     >>> make all (compila os arquivos assembly)
