@@ -1,6 +1,6 @@
 .global main, a, b, f, resultado
 .data
-	entrada:	    .asciz	"\nInsira a operação ou tecle (s) para sair:\n"
+	entrada:	    .asciz	"\nInsira a operação ou tecle (s) para sair:\n>>> "
 
 	err:		    .asciz  "err: Operação invalida!\n"
 	err_div:	    .asciz	"err: Divisão por zero!\n"
