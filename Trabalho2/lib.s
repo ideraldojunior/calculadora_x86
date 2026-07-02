@@ -88,20 +88,19 @@ exponenciacao:
     push %rbp
     movq %rsp, %rbp
 
-    fyl2x                   # %st(0) = y * log2(x)
+    fyl2x
 
-    fld %st(0)              # Duplica o resultado no topo
-    frndint                 # Arredonda %st(0) para o inteiro mais próximo
-    fsubr %st, %st(1)       # Subtrai o inteiro do original e obtêm a parte fracionária
-    fxch %st(1)             # Troca as posições
+    fld %st(0)
+    frndint 
+    fsubr %st, %st(1)
+    fxch %st(1)
 
-    f2xm1                   # Calcula 2^(frac) - 1
-    fld1                    # Carrega o número 1.0 em %st(0)
-    faddp %st, %st(1)       # Soma 1.0 com (2^(frac) - 1)
+    f2xm1
+    fld1
+    faddp %st, %st(1) 
 
-    fscale                  # %st(0) = (2^frac) * (2^int)
-
-    fstp %st(1)             # Remove a parte inteira (%st(1)) do topo da pilha
+    fscale 
+    fstp %st(1)             
 
     fstl resultado
     movsd resultado, %xmm0
@@ -332,30 +331,27 @@ print_int:
     push %r8
 
     mov $buffer_io, %rsi
-    add $31, %rsi          # Aponta para o fim do buffer
-    # movb $'\n', (%rsi)   # Adiciona quebra de linha no final
-    mov $10, %rbx          # Divisor base 10
-    mov $0, %rcx           # Contador de caracteres (já temos o \n)
+    add $31, %rsi          
+    mov $10, %rbx          
+    mov $0, %rcx 
 
-    # checar se o número é negativo
-    mov $0, %r8            # %r8 = 0 assume que é positivo
+    mov $0, %r8 
     cmp $0, %rax
     jge loop_print_int
 
-    mov $1, %r8            # %r8 = 1, marca que é negativo
-    neg %rax               # Inverte o sinal matematicamente (ex: -10 vira 10)
+    mov $1, %r8 
+    neg %rax
 
     loop_print_int:
-        xor %rdx, %rdx         # Zera o resto para a divisão
-        div %rbx               # %rax / 10. Quociente em %rax, Resto em %rdx
-        add $'0', %dl          # Converte o resto (dígito) para ASCII (usamos %dl porque é o byte inferior do %rdx)
-        dec %rsi               # Decrementa o ponteiro do buffer em uma posição
-        movb %dl, (%rsi)       # Salva o caractere
-        inc %rcx               # Incrementa contador de tamanho
-        test %rax, %rax        # Verifica se o quociente é 0
+        xor %rdx, %rdx  
+        div %rbx 
+        add $'0', %dl 
+        dec %rsi 
+        movb %dl, (%rsi)
+        inc %rcx 
+        test %rax, %rax
         jnz loop_print_int
 
-        # adiciona o sinal negativo se a flag %r8 for 1
         cmp $1, %r8
         jne print_int_syscall
         dec %rsi
@@ -363,11 +359,9 @@ print_int:
         inc %rcx
 
     print_int_syscall:
-        # Configuração para sys_write
-        # %rsi já está apontando para o inicio da nossa string
-        mov $1, %rax           # syscall syscall_write
-        mov $1, %rdi           # file descriptor 1 (stdout)
-        mov %rcx, %rdx         # tamanho da string a ser impressa
+        mov $1, %rax   
+        mov $1, %rdi      
+        mov %rcx, %rdx
         syscall
 
         pop %r8
@@ -416,9 +410,9 @@ print_ponto:
 
     mov $buffer_io, %rsi
     movb $'.', (%rsi)
-    mov $1, %rax           # syscall syscall_write
-    mov $1, %rdi           # file descriptor 1 (stdout)
-    mov $1, %rdx           # tamanho da string a ser impressa
+    mov $1, %rax        
+    mov $1, %rdi     
+    mov $1, %rdx          
     syscall
 
     pop %rdi
@@ -437,22 +431,21 @@ print_fracao:
     push %rdi
 
     mov $buffer_io, %rsi
-    add $31, %rsi          # Aponta para o fim do buffer
+    add $31, %rsi          
 
 
-    mov $10, %rbx          # Divisor base 10
-    mov $4, %rcx           # Contador: Forçar EXATAMENTE 4 casas decimais
+    mov $10, %rbx         
+    mov $4, %rcx          
 
     loop_fracao:
-        xor %rdx, %rdx         # Zera resto
-        div %rbx               # Divide %rax por 10
-        add $'0', %dl          # Converte o resto em caractere
-        dec %rsi               # Anda para trás no buffer
-        movb %dl, (%rsi)       # Salva o caractere
-        dec %rcx               # Diminui o contador
-        jnz loop_fracao        # Continua até fazer as 4 casas (mesmo se %rax já for 0)
+        xor %rdx, %rdx         
+        div %rbx               
+        add $'0', %dl          
+        dec %rsi              
+        movb %dl, (%rsi)       
+        dec %rcx               
+        jnz loop_fracao       
 
-        # Imprime os 4 dígitos
         mov $1, %rax
         mov $1, %rdi
         mov $4, %rdx
@@ -466,51 +459,42 @@ print_fracao:
         pop %rbp
         ret
 
-# Printa até 4 casas decimais, alterar mult_dec para mais ou menos casas
 print_float:
     push %rbp
     mov %rsp, %rbp
     sub $16, %rsp
 
-    # zerar a memória local para evitar lixo
     movq $0, -16(%rbp)
     movq $0, -8(%rbp)
 
     movsd %xmm0, -8(%rbp)
     fldl -8(%rbp)
 
-
-    # testa o bit de sinal do float.
     btq $63, -8(%rbp)
-    jnc float_positivo     # se o bit for 0 o número é positivo e salta
+    jnc float_positivo
 
     call print_menos
 
-    fabs                   # força o número no FPU a ficar positivo
+    fabs
 
-    # atualiza a memória com a versão positiva
     fstpl -8(%rbp)
     fldl -8(%rbp)
 
     float_positivo:
-        # Extrai e imprime a parte inteira
         fisttpq -16(%rbp)
         movq -16(%rbp), %rax
         call print_int
 
-        # Imprime o ponto
         call print_ponto
 
-        # Calcula a parte fracionária
         fldl -8(%rbp)
         fildq -16(%rbp)
-        fsubrp %st(0), %st(1)   # Faz o float - parte inteira = parte fracionaria
+        fsubrp %st(0), %st(1)
 
         fmull mult_dec
         fisttpq -16(%rbp)
         movq -16(%rbp), %rax
 
-        # Imprime a fração e finaliza
         call print_fracao
 
         add $16, %rsp
@@ -549,7 +533,7 @@ print_newline:
 
 
 #===========
-# Ler Linha
+#Ler Linha
 #===========
 ler_linha:
     push %rbp
@@ -561,7 +545,7 @@ ler_linha:
     mov $32, %rdx
     syscall
 
-    movq $buffer_io, ponteiro  # Coloca o ponteiro apontando para a 1ª letra do buffer
+    movq $buffer_io, ponteiro
 
     pop %rbp
     ret
@@ -575,11 +559,6 @@ ler_linha:
 read_float:
     push %rbp
     mov %rsp, %rbp
-
-    # -8(%rbp)  = Flag de Negativo
-    # -16(%rbp) = Parte Inteira
-    # -24(%rbp) = Parte Fracionaria
-    # -32(%rbp) = Divisor
     sub $32, %rsp
 
     push %rax
@@ -591,10 +570,10 @@ read_float:
     push %r9
     movq ponteiro, %rsi
 
-    xor %rax, %rax             # %rax vai acumular os inteiros
-    xor %rcx, %rcx             # %rcx vai ler os caracteres
-    mov $10, %r8               # Multiplicador base 10
-    movq $0, -8(%rbp)          # Zera a flag de negativo
+    xor %rax, %rax            
+    xor %rcx, %rcx
+    mov $10, %r8  
+    movq $0, -8(%rbp) 
 
     pula_espacos_float:
         movb (%rsi), %cl
@@ -607,32 +586,31 @@ read_float:
         movb (%rsi), %cl
         cmp $'-', %cl
         jne loop_parte_inteira
-        movq $1, -8(%rbp)          # Ativa flag de negativo
-        inc %rsi                   # Pula o caractere '-'
+        movq $1, -8(%rbp)     
+        inc %rsi   
 
     loop_parte_inteira:
         xor %rcx, %rcx
         movb (%rsi), %cl
-        cmp $'.', %cl               # Se achou ponto, vai pra fração
+        cmp $'.', %cl        
         je prepara_fracao
 
-        # Testa se o caracter está entre '0' e '9'
         cmp $'0', %cl
         jl fim_apenas_inteiro
         cmp $'9', %cl
         jg fim_apenas_inteiro
 
-        sub $'0', %cl              # Converte ASCII '5' para número 5
-        mul %r8                    # Multiplica acumulador por 10
-        add %rcx, %rax             # Soma o novo dígito
+        sub $'0', %cl              
+        mul %r8
+        add %rcx, %rax       
         inc %rsi
         jmp loop_parte_inteira
 
     prepara_fracao:
-        inc %rsi                   # Pula o '.'
-        movq %rax, -16(%rbp)       # Salva a parte inteira na RAM
-        xor %rax, %rax             # Zera o acumulador para a fração
-        mov $1, %r9                # %r9 será o divisor
+        inc %rsi                   
+        movq %rax, -16(%rbp)    
+        xor %rax, %rax            
+        mov $1, %r9  
 
     loop_parte_fracionaria:
         xor %rcx, %rcx
@@ -643,10 +621,9 @@ read_float:
         jg monta_float_final
 
         sub $'0', %cl
-        mul %r8                    # fração * 10
+        mul %r8                    
         add %rcx, %rax
 
-        # Multiplica o divisor por 10 também
         push %rax
         mov %r9, %rax
         mul %r8
@@ -657,25 +634,25 @@ read_float:
         jmp loop_parte_fracionaria
 
     monta_float_final:
-        movq %rax, -24(%rbp)       # Salva a parte fracionária
-        movq %r9, -32(%rbp)        # Salva o divisor
+        movq %rax, -24(%rbp)
+        movq %r9, -32(%rbp)
 
-        fildq -16(%rbp)            # PUSH Int
-        fildq -24(%rbp)            # PUSH Frac (Fica em st(0), int em st(1))
-        fildq -32(%rbp)            # PUSH Divisor (Fica em st(0), frac em st(1))
+        fildq -16(%rbp)
+        fildq -24(%rbp)
+        fildq -32(%rbp)
 
-        fdivrp %st(0), %st(1)      # st(1) = st(1) / st(0) e dá POP (frac / divisor)
-        faddp %st(0), %st(1)       # Soma a fração calculada com a parte inteira
+        fdivrp %st(0), %st(1) 
+        faddp %st(0), %st(1)
         jmp checa_sinal
 
     fim_apenas_inteiro:
         movq %rax, -16(%rbp)
-        fildq -16(%rbp)            # Joga o inteiro na FPU
+        fildq -16(%rbp) 
 
     checa_sinal:
-        cmpq $1, -8(%rbp)          # é negativo?
+        cmpq $1, -8(%rbp)  
         jne fim_read_float
-        fchs                       # Inverte o sinal na FPU (vira negativo)
+        fchs                 
 
     fim_read_float:
         movq %rsi, ponteiro
@@ -706,14 +683,13 @@ read_operador:
 
     loop_busca_op:
         movb (%rsi), %al
-        cmp $'\n', %al             # Ignora quebras de linha
+        cmp $'\n', %al      
         je pular_op
-        cmp $' ', %al              # Ignora espaços
+        cmp $' ', %al 
         je pular_op
         cmp $0, %al
         je pular_op
 
-        # Achou o operador, salva na memória global
         movb %al, operacao
         inc %rsi
         movq %rsi, ponteiro

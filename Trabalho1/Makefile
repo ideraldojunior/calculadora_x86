@@ -1,9 +1,7 @@
-all: 
-	git add .
-	git commit -m "o"
+all:
 	gcc calculadora.s lib.s -o calculadora -no-pie -g
 
-test: 
+executa: 
 	./calculadora
 
 debugg:

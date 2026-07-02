@@ -87,21 +87,20 @@ exponenciacao:
     push %rbp
     movq %rsp, %rbp
 
-    fyl2x                   # %st(0) = y * log2(x)
+    fyl2x
 
-    fld %st(0)              # Duplica o resultado no topo
-    frndint                 # Arredonda %st(0) para o inteiro mais próximo
-    fsubr %st, %st(1)       # Subtrai o inteiro do original e obtêm a parte fracionária
-    fxch %st(1)             # Troca as posições
+    fld %st(0)
+    frndint
+    fsubr %st, %st(1)
+    fxch %st(1)
 
-    f2xm1                   # Calcula 2^(frac) - 1
-    fld1                    # Carrega o número 1.0 em %st(0)
-    faddp %st, %st(1)       # Soma 1.0 com (2^(frac) - 1)
+    f2xm1 
+    fld1
+    faddp %st, %st(1) 
 
-    fscale                  # %st(0) = (2^frac) * (2^int)
+    fscale 
 
-    fstp %st(1)             # Remove a parte inteira (%st(1)) do topo da pilha
-
+    fstp %st(1)
     fstl resultado
     movsd resultado, %xmm0
 

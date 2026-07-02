@@ -35,7 +35,7 @@
     .comm   f, 8
     .comm   erro_flag, 8
 
-    .comm   buffer_io, 256
+    .comm   buffer_io, 64
     .comm   ponteiro, 8
 
     .comm   mem_vars_valores, 208
@@ -59,7 +59,7 @@ main:
 
 controlador:
     finit
-    movq $0, erro_flag(%rip)
+    movq $0, erro_flag
 
     call mensagem
     call ler_linha
@@ -68,7 +68,7 @@ controlador:
     cmpq $1, %rax
     je controlador
 
-    movq ponteiro(%rip), %rsi
+    movq ponteiro, %rsi
     movb (%rsi), %al
     cmpb $'s', %al
     je sair
@@ -77,7 +77,7 @@ controlador:
 
     call avaliar_expressao
 
-    cmpq $1, erro_flag(%rip)
+    cmpq $1, erro_flag
     je controlador
 
     call imprime_resultado_float
@@ -95,59 +95,59 @@ avaliar_expressao:
     movq %rsp, %rbp
 
     call primeiro_operando
-    cmpq $1, erro_flag(%rip)
+    cmpq $1, erro_flag
     je fim_avaliar
 
     call operador
-    cmpb $0, operacao(%rip)
+    cmpb $0, operacao
     je trata_consulta_simples
 
-    cmpb $'!', operacao(%rip)
+    cmpb $'!', operacao
     je trata_fatorial
 
-    cmpb $'i', operacao(%rip)
+    cmpb $'i', operacao
     je trata_inverso
 
-    cmpb $'r', operacao(%rip)
+    cmpb $'r', operacao
     je trata_quadrada
 
-    cmpb $'p', operacao(%rip)
+    cmpb $'p', operacao
     je trata_proximo_primo
 
     call segundo_operando
-    cmpq $1, erro_flag(%rip)
+    cmpq $1, erro_flag
     je fim_avaliar
 
-    cmpb $'+', operacao(%rip)
+    cmpb $'+', operacao
     je trata_soma
 
-    cmpb $'-', operacao(%rip)
+    cmpb $'-', operacao
     je trata_subtracao
 
-    cmpb $'*', operacao(%rip)
+    cmpb $'*', operacao
     je trata_multiplicacao
 
-    cmpb $'/', operacao(%rip)
+    cmpb $'/', operacao
     je trata_divisao
 
-    cmpb $'^', operacao(%rip)
+    cmpb $'^', operacao
     je trata_exponenciacao
 
-    cmpb $'c', operacao(%rip)
+    cmpb $'c', operacao
     je trata_combinacao
 
-    cmpb $'a', operacao(%rip)
+    cmpb $'a', operacao
     je trata_arranjo
 
-    cmpb $'l', operacao(%rip)
+    cmpb $'l', operacao
     je trata_logaritmo
 
     jmp chama_erro
 
     trata_consulta_simples:
-        fstpl resultado(%rip)
-        movsd resultado(%rip), %xmm0
-        fldl resultado(%rip)
+        fstpl resultado
+        movsd resultado, %xmm0
+        fldl resultado
         jmp fim_avaliar
 
     trata_fatorial:
@@ -156,17 +156,17 @@ avaliar_expressao:
         ja erro_fat
         fstp %st(0)
 
-        movsd a(%rip), %xmm0
+        movsd a, %xmm0
         cvttsd2si %xmm0, %r8
-        movq %r8, f(%rip)
+        movq %r8, f
 
         call fatorial
         push %rax
         fildq (%rsp)
         pop %rax
-        fstpl resultado(%rip)
-        movsd resultado(%rip), %xmm0
-        fldl resultado(%rip)
+        fstpl resultado
+        movsd resultado, %xmm0
+        fldl resultado
         jmp fim_avaliar
 
     erro_fat:
@@ -174,7 +174,7 @@ avaliar_expressao:
         jmp chama_erro
 
     trata_inverso:
-        movsd a(%rip), %xmm0
+        movsd a, %xmm0
         xorpd %xmm1, %xmm1
         ucomisd %xmm1, %xmm0
 
@@ -182,7 +182,7 @@ avaliar_expressao:
         call inverso
         fstp %st(0)
         fstp %st(0)
-        fldl resultado(%rip)
+        fldl resultado
 
         jmp fim_avaliar
 
@@ -193,7 +193,7 @@ avaliar_expressao:
 
         call quadrada
         fstp %st(0)
-        fldl resultado(%rip)
+        fldl resultado
 
         jmp fim_avaliar
 
@@ -203,10 +203,10 @@ avaliar_expressao:
 
     trata_proximo_primo:
         fldz
-		fcomip %st(1), %st(0)
-		ja erro_primo
+        fcomip %st(1), %st(0)
+        ja erro_primo
 
-        movsd a(%rip), %xmm0
+        movsd a, %xmm0
         cvttsd2si %xmm0, %r8
 
         call proximo_primo
@@ -214,9 +214,9 @@ avaliar_expressao:
         push %rax
         fildq (%rsp)
         pop %rax
-        fstpl resultado(%rip)
-        movsd resultado(%rip), %xmm0
-        fldl resultado(%rip)
+        fstpl resultado
+        movsd resultado, %xmm0
+        fldl resultado
         jmp fim_avaliar
 
     erro_primo:
@@ -236,7 +236,7 @@ avaliar_expressao:
         jmp limpa_binario
 
     trata_divisao:
-        movsd b(%rip), %xmm0
+        movsd b, %xmm0
         xorpd %xmm1, %xmm1
         ucomisd %xmm1, %xmm0
 
@@ -245,83 +245,76 @@ avaliar_expressao:
         jmp limpa_binario
 
     trata_exponenciacao:
-        fldl b(%rip)                # %st(0) = expoente
-        fldl a(%rip)                # %st(0) = base, %st(1) = expoente
+        fldl b                
+        fldl a              
 
-        fldz                        # Puxa o 0 pro topo da pilha
-        fcomip %st(1), %st(0)       # Compara 0 com a base
-        ja base_negativa            # Se 0 > base
+        fldz                        
+        fcomip %st(1), %st(0)      
+        ja base_negativa           
 
-        # Se a base for >= 0, faz o caminho normal:
         call exponenciacao
         jmp fim_exponenciacao
 
         base_negativa:
-            # A base é negativa. Só calculamos se o expoente for INTEIRO.
-            # Vamos puxar o float para a CPU para checar se ele tem casas decimais:
-            movsd b(%rip), %xmm0        # xmm0 = float original (ex: 3.0 ou 2.5)
-            cvttsd2si %xmm0, %rax       # Converte para inteiro (ex: 3.0 -> 3 | 2.5 -> 2)
-            cvtsi2sd %rax, %xmm1        # Converte de volta pra float (ex: 3 -> 3.0 | 2 -> 2.0)
+            movsd b, %xmm0        
+            cvttsd2si %xmm0, %rax       
+            cvtsi2sd %rax, %xmm1        
 
-            ucomisd %xmm0, %xmm1        # Compara a versão original com a recriada
-            jne chama_erro_exp          # Se forem diferentes, tem casa decimal! Erro!
+            ucomisd %xmm0, %xmm1       
+            jne chama_erro_exp          
 
-            # Se passou, o expoente é inteiro. Podemos calcular!
-            fabs                        # 'Float Absolute': Transforma a base na FPU em positiva
-            call exponenciacao          # Calcula a potência. O resultado volta no topo %st(0)
+            fabs                    
+            call exponenciacao         
 
-            # O resultado precisa ficar negativo? Depende se o expoente é ímpar!
-            # %rax já contém o nosso expoente inteiro salvo.
-            test $1, %rax               # 'test' no último bit descobre se o número é ímpar
-            jz fim_exponenciacao        # Se for 0 (Par), o resultado já está positivo e correto. Pula!
+            test $1, %rax               
+            jz fim_exponenciacao        
 
-            # Se for Ímpar, invertemos o sinal:
-            fchs                        # Inverte o sinal do resultado no topo da FPU
-            fstl resultado(%rip)        # Atualiza o novo resultado na memória global
-            movsd resultado(%rip), %xmm0 # Atualiza o %xmm0 para a função de impressão
+            fchs                        
+            fstl resultado        
+            movsd resultado, %xmm0 
 
         fim_exponenciacao:
             call imprime_resultado_float
-            jmp controlador             # (Ou jmp limpa_binario, use o que você usava para finalizar)
+            jmp controlador           
 
         chama_erro_exp:
-            fstp %st(0)                 # Limpa a base da FPU para não vazar memória
-            fstp %st(0)                 # Limpa o expoente da FPU
-            call erro_raiz              # Imprime o erro "Operando não pode ser negativo"
+            fstp %st(0)            
+            fstp %st(0)                
+            call erro_raiz           
             jmp controlador
 
     trata_combinacao:
-        movsd a(%rip), %xmm0
+        movsd a, %xmm0
         cvttsd2si %xmm0, %r8
-        movq %r8, a(%rip)
+        movq %r8, a
 
-        movsd b(%rip), %xmm0
+        movsd b, %xmm0
         cvttsd2si %xmm0, %r8
-        movq %r8, b(%rip)
+        movq %r8, b
 
         call combinacao
         push %rax
         fildq (%rsp)
         pop %rax
-        fstpl resultado(%rip)
-        movsd resultado(%rip), %xmm0
+        fstpl resultado
+        movsd resultado, %xmm0
         jmp limpa_binario
 
     trata_arranjo:
-        movsd a(%rip), %xmm0
+        movsd a, %xmm0
         cvttsd2si %xmm0, %r8
-        movq %r8, a(%rip)
+        movq %r8, a
 
-        movsd b(%rip), %xmm0
+        movsd b, %xmm0
         cvttsd2si %xmm0, %r8
-        movq %r8, b(%rip)
+        movq %r8, b
 
         call arranjo
         push %rax
         fildq (%rsp)
         pop %rax
-        fstpl resultado(%rip)
-        movsd resultado(%rip), %xmm0
+        fstpl resultado
+        movsd resultado, %xmm0
         jmp limpa_binario
 
     trata_logaritmo:
@@ -351,7 +344,7 @@ avaliar_expressao:
     limpa_binario:
         fstp %st(0)
         fstp %st(0)
-        fldl resultado(%rip)
+        fldl resultado
         jmp fim_avaliar
 
     fim_avaliar:
@@ -379,10 +372,10 @@ primeiro_operando:
     push %rbp
     movq %rsp, %rbp
     call avaliar_token
-    cmpq $1, erro_flag(%rip)
+    cmpq $1, erro_flag
     je fim_primeiro_op
-    fstpl a(%rip)
-    fldl a(%rip)
+    fstpl a
+    fldl a
 fim_primeiro_op:
     movq %rbp, %rsp
     pop %rbp
@@ -391,7 +384,7 @@ fim_primeiro_op:
 operador:
     push %rbp
     movq %rsp, %rbp
-    movq ponteiro(%rip), %rsi
+    movq ponteiro, %rsi
 
 loop_op:
     movb (%rsi), %al
@@ -409,7 +402,7 @@ avalia_op:
     jmp fim_operador
 
 seta_op_nulo:
-    movb $0, operacao(%rip)
+    movb $0, operacao
 
 fim_operador:
     movq %rbp, %rsp
@@ -420,10 +413,10 @@ segundo_operando:
     push %rbp
     movq %rsp, %rbp
     call avaliar_token
-    cmpq $1, erro_flag(%rip)
+    cmpq $1, erro_flag
     je fim_segundo_op
-    fstpl b(%rip)
-    fldl b(%rip)
+    fstpl b
+    fldl b
 fim_segundo_op:
     movq %rbp, %rsp
     pop %rbp
@@ -436,7 +429,7 @@ fim_segundo_op:
 erro_divisao_zero:
     push %rbp
     movq %rsp, %rbp
-    movq $1, erro_flag(%rip)
+    movq $1, erro_flag
     movq $1, %rax
     movq $1, %rdi
     movq $err_div, %rsi
@@ -449,7 +442,7 @@ erro_divisao_zero:
 erro_raiz:
     push %rbp
     movq %rsp, %rbp
-    movq $1, erro_flag(%rip)
+    movq $1, erro_flag
     movq $1, %rax
     movq $1, %rdi
     movq $err_raiz, %rsi
@@ -462,7 +455,7 @@ erro_raiz:
 erro_inverso:
     push %rbp
     movq %rsp, %rbp
-    movq $1, erro_flag(%rip)
+    movq $1, erro_flag
     movq $1, %rax
     movq $1, %rdi
     movq $err_inv, %rsi
@@ -475,7 +468,7 @@ erro_inverso:
 operacao_invalida:
     push %rbp
     movq %rsp, %rbp
-    movq $1, erro_flag(%rip)
+    movq $1, erro_flag
     movq $1, %rax
     movq $1, %rdi
     movq $err, %rsi
@@ -488,7 +481,7 @@ operacao_invalida:
 erro_variavel:
     push %rbp
     movq %rsp, %rbp
-    movq $1, erro_flag(%rip)
+    movq $1, erro_flag
     movq $1, %rax
     movq $1, %rdi
     movq $err_var, %rsi
@@ -524,7 +517,7 @@ ler_linha:
     mov $buffer_io, %rsi
     mov $256, %rdx
     syscall
-    movq $buffer_io, ponteiro(%rip)
+    movq $buffer_io, ponteiro
     pop %rbp
     ret
 
@@ -540,7 +533,7 @@ pega_indice_letra:
 avaliar_token:
     push %rbp
     movq %rsp, %rbp
-    movq ponteiro(%rip), %rsi
+    movq ponteiro, %rsi
 
 pula_espaco_tok:
     movb (%rsi), %al
@@ -550,7 +543,7 @@ pula_espaco_tok:
     jmp pula_espaco_tok
 
 define_tipo:
-    movq %rsi, ponteiro(%rip)
+    movq %rsi, ponteiro
     cmpb $'0', %al
     jl checa_negativo
     cmpb $'9', %al
@@ -583,18 +576,18 @@ eh_variavel:
     cmpq $23, %rbx
     je carrega_x_local
 
-    leaq mem_vars_status(%rip), %rdx
+    leaq mem_vars_status, %rdx
     cmpb $0, (%rdx, %rbx)
     je erro_token_var
 
-    leaq mem_vars_valores(%rip), %rdx
+    leaq mem_vars_valores, %rdx
     fldl (%rdx, %rbx, 8)
-    movq %rsi, ponteiro(%rip)
+    movq %rsi, ponteiro
     jmp fim_token
 
 carrega_x_local:
-    fldl valor_de_x(%rip)
-    movq %rsi, ponteiro(%rip)
+    fldl valor_de_x
+    movq %rsi, ponteiro
     jmp fim_token
 
 eh_numero:
@@ -603,13 +596,13 @@ eh_numero:
 
 eh_funcao:
     incq %rsi
-    movq %rsi, ponteiro(%rip)
+    movq %rsi, ponteiro
 
     call avaliar_token
-    cmpq $1, erro_flag(%rip)
+    cmpq $1, erro_flag
     je fim_token
 
-    movq ponteiro(%rip), %rsi
+    movq ponteiro, %rsi
 
 busca_fecha:
     cmpb $')', (%rsi)
@@ -623,25 +616,25 @@ busca_fecha:
 
 executa_recursao:
     incq %rsi
-    movq %rsi, ponteiro(%rip)
+    movq %rsi, ponteiro
 
-    pushq ponteiro(%rip)
-    movzbq operacao(%rip), %rax
+    pushq ponteiro
+    movzbq operacao, %rax
     pushq %rax
-    movq a(%rip), %rax
+    movq a, %rax
     pushq %rax
-    movq b(%rip), %rax
+    movq b, %rax
     pushq %rax
-    movq valor_de_x(%rip), %rax
+    movq valor_de_x, %rax
     pushq %rax
 
-    fstpl valor_de_x(%rip)
+    fstpl valor_de_x
 
     movq %rbx, %rax
     imulq $32, %rax
-    leaq mem_funcs_strings(%rip), %rdx
+    leaq mem_funcs_strings, %rdx
     addq %rax, %rdx
-    movq %rdx, ponteiro(%rip)
+    movq %rdx, ponteiro
 
     call avaliar_expressao
 
@@ -650,15 +643,15 @@ executa_recursao:
     popq %r10
 
     popq %rax
-    movq %rax, valor_de_x(%rip)
+    movq %rax, valor_de_x
     popq %rax
-    movq %rax, b(%rip)
+    movq %rax, b
     popq %rax
-    movq %rax, a(%rip)
+    movq %rax, a
     popq %rax
-    movb %al, operacao(%rip)
+    movb %al, operacao
     popq %rax
-    movq %rax, ponteiro(%rip)
+    movq %rax, ponteiro
 
     pushq %r10
     fldl (%rsp)
@@ -682,7 +675,7 @@ fim_token:
 verifica_atribuicao:
     push %rbp
     movq %rsp, %rbp
-    movq ponteiro(%rip), %rsi
+    movq ponteiro, %rsi
     movq $0, %rcx
 
 busca_igual_attr:
@@ -721,11 +714,11 @@ checa_tipo_attr:
 
 grava_variavel:
     leaq 1(%rsi, %rcx), %rdx
-    movq %rdx, ponteiro(%rip)
+    movq %rdx, ponteiro
     call read_float
-    leaq mem_vars_valores(%rip), %rdx
+    leaq mem_vars_valores, %rdx
     fstpl (%rdx, %rbx, 8)
-    leaq mem_vars_status(%rip), %rdx
+    leaq mem_vars_status, %rdx
     movb $1, (%rdx, %rbx)
     jmp fim_sucesso_attr
 
@@ -741,7 +734,7 @@ inicia_copia_str:
     incq %rsi
     movq %rbx, %rax
     imulq $32, %rax
-    leaq mem_funcs_strings(%rip), %rdi
+    leaq mem_funcs_strings, %rdi
     addq %rax, %rdi
 
 laco_copia_str:
@@ -758,7 +751,7 @@ laco_copia_str:
 termina_copia:
     movb $'\n', (%rdi)
     movb $0, 1(%rdi)
-    leaq mem_funcs_status(%rip), %rdx
+    leaq mem_funcs_status, %rdx
     movb $1, (%rdx, %rbx)
     jmp fim_sucesso_attr
 
